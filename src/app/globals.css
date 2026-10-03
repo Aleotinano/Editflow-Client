@@ -1,26 +1,177 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+/* ─── Design Tokens ──────────────────────────────────────────────────────────
+   Todas las decisiones de diseño de EditFlow viven acá.
+   Tailwind v4 genera las utilidades automáticamente desde estos tokens.
+   Agregar un color acá = disponible como bg-*, text-*, border-*, etc.
+   ─────────────────────────────────────────────────────────────────────────── */
+
+@theme {
+  /* Brand — naranja cálido */
+  --color-brand-50:  #fff7ed;
+  --color-brand-100: #ffedd5;
+  --color-brand-200: #fed7aa;
+  --color-brand-300: #fdba74;
+  --color-brand-400: #fb923c;
+  --color-brand-500: #f97316;   /* ← primario: CTAs, accents, estados activos */
+  --color-brand-600: #ea580c;
+  --color-brand-700: #c2410c;
+  --color-brand-800: #9a3412;
+  --color-brand-900: #7c2d12;
+
+  /* Surface — fondos oscuros con tinte violeta */
+  --color-surface-950: #09090e;  /* fondo más profundo — app bg */
+  --color-surface-900: #0e0e16;  /* bg principal */
+  --color-surface-800: #131320;  /* sidebar, panels */
+  --color-surface-700: #1a1a2c;  /* superficies elevadas */
+  --color-surface-600: #222239;  /* hover states */
+  --color-surface-500: #2b2b47;  /* bordes sutiles */
+
+  /* Ink — tipografía */
+  --color-ink-950:  #f4f4f8;   /* texto primario */
+  --color-ink-900:  #e2e2ec;
+  --color-ink-700:  #a0a0bc;   /* texto secundario */
+  --color-ink-500:  #68688a;   /* muted, placeholders */
+  --color-ink-300:  #3e3e58;   /* disabled */
+
+  /* Feedback */
+  --color-success-400: #4ade80;
+  --color-success-500: #22c55e;
+  --color-warning-400: #facc15;
+  --color-warning-500: #eab308;
+  --color-error-400:   #f87171;
+  --color-error-500:   #ef4444;
+  --color-info-400:    #60a5fa;
+  --color-info-500:    #3b82f6;
+
+  /* Fuentes */
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+
+  /* Radio de borde — mínimo y consistente */
+  --radius-sm:  4px;   /* badges, chips pequeños */
+  --radius-md:  6px;   /* inputs, botones */
+  --radius-lg:  10px;  /* panels (usar con criterio) */
+  --radius-xl:  14px;  /* modals */
+
+  /* Transiciones estándar */
+  --ease-default: cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+/* ─── Light theme overrides ──────────────────────────────────────────────────
+   Cuando el usuario elige "light", estas variables sobreescriben las del @theme.
+   Todas las clases (bg-surface-950, text-ink-950, etc.) funcionan sin cambios.
+   ─────────────────────────────────────────────────────────────────────────── */
+
+.light {
+  /* Fondos — blanco roto hacia gris suave */
+  --color-surface-950: #f8f8fc;   /* app bg */
+  --color-surface-900: #f2f2f7;   /* bg principal */
+  --color-surface-800: #ffffff;   /* sidebar, panels */
+  --color-surface-700: #ebebf2;   /* superficies elevadas */
+  --color-surface-600: #e2e2ea;   /* hover states */
+  --color-surface-500: #d1d1e0;   /* bordes */
+
+  /* Tipografía — oscuro sobre claro */
+  --color-ink-950:  #0f0f1a;   /* texto primario */
+  --color-ink-900:  #1e1e30;
+  --color-ink-700:  #4a4a6a;   /* texto secundario */
+  --color-ink-500:  #8888a8;   /* muted */
+  --color-ink-300:  #c0c0d8;   /* disabled */
+
+  /* Brand — el naranja se mantiene, solo ajustamos la intensidad */
+  --color-brand-500: #f97316;
+  --color-brand-400: #fb923c;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+/* ─── Base ────────────────────────────────────────────────────────────────── */
+
+html {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  height: 100%;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: var(--color-surface-950);
+  color: var(--color-ink-950);
+  font-family: var(--font-sans);
+  height: 100%;
+  transition: background-color 200ms ease, color 200ms ease;
+}
+
+/* ─── Scrollbar — sutil y consistente ───────────────────────────────────────*/
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-surface-500) transparent;
+}
+
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: var(--color-surface-500);
+  border-radius: 99px;
+}
+::-webkit-scrollbar-thumb:hover { background: var(--color-surface-600); }
+
+/* ─── Selección de texto ─────────────────────────────────────────────────── */
+
+::selection {
+  background: color-mix(in srgb, var(--color-brand-500) 25%, transparent);
+  color: var(--color-ink-950);
+}
+
+/* ─── Focus visible — accesibilidad sin ruido visual ────────────────────── */
+
+:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--color-brand-500) 60%, transparent);
+  outline-offset: 2px;
+}
+
+/* ─── Utilidades de pattern — documentan la filosofía sin-caja ──────────── */
+
+/* Separador de sección: espacio + línea fina, sin caja */
+.section-divider {
+  border-top: 1px solid color-mix(in srgb, white 6%, transparent);
+  padding-top: 1.5rem;
+  margin-top: 1.5rem;
+}
+
+/* Fila de lista: hover sutil, sin borde lateral */
+.list-row {
+  display: flex;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid color-mix(in srgb, white 5%, transparent);
+  transition: background-color 150ms var(--ease-default);
+}
+.list-row:hover {
+  background-color: color-mix(in srgb, white 2%, transparent);
+}
+
+/* Item activo: acento izquierdo, sin fondo gritón */
+.item-active {
+  border-left: 2px solid var(--color-brand-500);
+  padding-left: calc(0.75rem - 2px);
+  color: var(--color-brand-400);
+}
+.item-inactive {
+  border-left: 2px solid transparent;
+  padding-left: calc(0.75rem - 2px);
+  color: var(--color-ink-700);
+}
+.item-inactive:hover {
+  color: var(--color-ink-950);
+  background-color: color-mix(in srgb, white 2.5%, transparent);
+}
+
+/* Label de sección — alternativa a título dentro de caja */
+.section-label {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-ink-500);
 }
