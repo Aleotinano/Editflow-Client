@@ -7,7 +7,7 @@ import {
   useState,
 } from "react";
 import { toast } from "sonner";
-import { folders as foldersApi } from "@/lib/api";
+import { assetStreamUrl, folders as foldersApi } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import { patterns } from "@/lib/tokens";
 import type { AssetSummary, FolderWithAssets } from "@/lib/api";
@@ -15,10 +15,6 @@ import AssetViewer from "@/components/asset-viewer";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-function getToken() {
-  if (typeof window === "undefined") return "";
-  return localStorage.getItem("token") ?? "";
-}
 
 // ─── Icons ────────────────────────────────────────────────────────────────────
 
@@ -107,7 +103,7 @@ function AudioWaveform() {
 
 function MediaPreview({ asset }: { asset: AssetSummary }) {
   const [imgError, setImgError] = useState(false);
-  const streamUrl = `${process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3000/api"}/assets/${asset.id}/stream?token=${getToken()}`;
+  const streamUrl = assetStreamUrl(asset.id);
 
   if (asset.mediaType === "IMAGE" && !imgError) {
     return (

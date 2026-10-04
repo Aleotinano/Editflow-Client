@@ -1,47 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import type { Role } from "@/lib/api";
+import { useContext } from "react";
+import { AuthContext } from "@/contexts/auth-context";
 
-export interface CurrentUser {
-  id: string;
-  name: string;
-  email: string;
-  role: Role;
-  createdAt: string;
-}
+export type { CurrentUser } from "@/contexts/auth-context";
 
+/** La sesión actual. Solo dentro de `AuthProvider` (lo monta `app/(app)/layout.tsx`). */
 export function useAuth() {
-  const router  = useRouter();
-  const [user,    setUser]    = useState<CurrentUser | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-    const raw   = localStorage.getItem("user");
-
-    if (!token || !raw) {
-      router.replace("/login");
-      return;
-    }
-
-    try {
-      setUser(JSON.parse(raw) as CurrentUser);
-    } catch {
-      localStorage.removeItem("token");
-      localStorage.removeItem("user");
-      router.replace("/login");
-    } finally {
-      setLoading(false);
-    }
-  }, [router]);
-
-  function logout() {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
-    router.push("/login");
-  }
-
-  return { user, loading, logout };
+  const ctx = useContext(AuthContext);
+  if (!ctx) throw new Error("useAuth debe usarse dentro de AuthProvider");
+  return ctx;
 }

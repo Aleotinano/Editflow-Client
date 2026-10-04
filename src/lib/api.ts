@@ -1,14 +1,13 @@
 const BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3000/api";
 
-function getToken() {
-  if (typeof window === "undefined") return null;
-  return localStorage.getItem("token");
+/** URL del streaming de un asset. La sesión viaja en la cookie: el `<video>` la manda solo. */
+export function assetStreamUrl(assetId: string): string {
+  return `${BASE}/assets/${assetId}/stream`;
 }
 
 type RequestOptions = {
   method?: string;
   body?: unknown;
-  token?: string;
 };
 
 export class ApiError extends Error {
@@ -20,16 +19,16 @@ export class ApiError extends Error {
 
 export async function apiFetch<T>(
   path: string,
-  { method = "GET", body, token }: RequestOptions = {}
+  { method = "GET", body }: RequestOptions = {}
 ): Promise<T> {
-  const headers: HeadersInit = { "Content-Type": "application/json" };
-  const t = token ?? getToken();
-  if (t) headers["Authorization"] = `Bearer ${t}`;
-
+  // La sesión es una cookie httpOnly que emite la API: el front no la ve ni la guarda.
+  // `credentials: "include"` es lo que hace que el navegador la mande (y la acepte en el
+  // login); tiene que estar en TODAS las requests, no solo en la del login.
   const res = await fetch(`${BASE}${path}`, {
     method,
-    headers,
+    headers: { "Content-Type": "application/json" },
     body: body ? JSON.stringify(body) : undefined,
+    credentials: "include",
   });
 
   const data = await res.json().catch(() => ({}));
@@ -47,7 +46,6 @@ export type Role       = "ADMIN" | "EDITOR" | "CLIENT";
 export type ClientType = "COMPANY" | "CREATOR";
 
 export interface AuthResponse {
-  token: string;
   user: {
     id:        string;
     name:      string;
@@ -62,6 +60,8 @@ export const auth = {
     apiFetch<AuthResponse>("/auth/login", { method: "POST", body: { email, password } }),
 
   me: () => apiFetch<AuthResponse["user"]>("/auth/me"),
+
+  logout: () => apiFetch<void>("/auth/logout", { method: "POST" }),
 };
 
 // ─── Projects ─────────────────────────────────────────────────────────────────

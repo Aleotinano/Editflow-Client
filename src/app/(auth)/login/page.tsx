@@ -33,9 +33,8 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      const { token, user } = await auth.login(email, password);
-      localStorage.setItem("token", token);
-      localStorage.setItem("user", JSON.stringify(user));
+      // La API deja la sesión en una cookie httpOnly; acá solo llega el usuario.
+      const { user } = await auth.login(email, password);
 
       toast.success(`Bienvenido, ${user.name}`, {
         description: "Sesión iniciada correctamente.",
@@ -52,6 +51,8 @@ export default function LoginPage() {
     } catch (err) {
       if (err instanceof ApiError && err.status === 401) {
         setError("Email o contraseña incorrectos");
+      } else if (err instanceof ApiError && err.status === 429) {
+        setError("Demasiados intentos. Esperá unos minutos y volvé a probar.");
       } else {
         setError("No se pudo conectar con el servidor");
       }

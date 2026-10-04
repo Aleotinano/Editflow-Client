@@ -6,7 +6,8 @@ import { NotificationsProvider } from "@/contexts/notifications-context";
 
 /**
  * AppShell — envuelve todas las rutas autenticadas.
- * Centraliza la verificación de auth: si no hay token redirige a /login.
+ * La sesión la resuelve AuthProvider (app/(app)/layout.tsx): si la API dice que no hay
+ * sesión, redirige a /login.
  * Renderiza el sidebar + el área de contenido principal.
  */
 export default function AppShell({ children }: { children: React.ReactNode }) {
@@ -21,7 +22,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     );
   }
 
-  /* Redirigiendo a /login — useAuth ya llamó router.replace */
+  /* Redirigiendo a /login — AuthProvider ya llamó router.replace */
   if (!user) return null;
 
   /* ── App shell ────────────────────────────────────────────────────────── */

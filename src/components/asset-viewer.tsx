@@ -7,19 +7,17 @@ import {
   projects,
   comments as commentsApi,
   ApiError,
+  assetStreamUrl,
   type ProjectDetail,
   type AssetSummary,
   type Comment,
 } from "@/lib/api";
 import { cn, formatRelative } from "@/lib/utils";
 import { patterns } from "@/lib/tokens";
+import { useAuth } from "@/hooks/use-auth";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-function getToken(): string {
-  if (typeof window === "undefined") return "";
-  return localStorage.getItem("token") ?? "";
-}
 
 function formatTime(s: number): string {
   if (!isFinite(s) || s < 0) return "0:00";
@@ -208,7 +206,7 @@ function VideoPlayer({
 }) {
   const mediaRef = useRef<HTMLVideoElement & HTMLAudioElement>(null);
   const [mediaError, setMediaError] = useState(false);
-  const streamUrl = `${process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3000/api"}/assets/${assetId}/stream?token=${getToken()}`;
+  const streamUrl = assetStreamUrl(assetId);
 
   // Sync play/pause
   useEffect(() => {
@@ -506,6 +504,7 @@ interface AssetViewerProps {
 }
 
 export default function AssetViewer({ projectId, assetId, backHref, backLabel }: AssetViewerProps) {
+  const { user: currentUser } = useAuth();
   const [project,     setProject]     = useState<ProjectDetail | null>(null);
   const [commentList, setCommentList] = useState<Comment[]>([]);
   const [loading,     setLoading]     = useState(true);
@@ -574,14 +573,9 @@ export default function AssetViewer({ projectId, assetId, backHref, backLabel }:
     );
   }
 
-  // Read current user from localStorage
-  let currentUserId   = "";
-  let currentUserRole = "";
-  try {
-    const u = JSON.parse(localStorage.getItem("user") ?? "{}");
-    currentUserId   = u.id   ?? "";
-    currentUserRole = u.role ?? "";
-  } catch { /* ignore */ }
+  // El usuario sale de la sesión (AuthProvider), no de localStorage.
+  const currentUserId   = currentUser?.id   ?? "";
+  const currentUserRole = currentUser?.role ?? "";
 
   const typeBadgeClass =
     asset.type === "EDITED"
